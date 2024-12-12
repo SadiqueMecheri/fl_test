@@ -17,7 +17,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => TaskProvider()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }

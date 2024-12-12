@@ -1,3 +1,4 @@
+import 'package:fl_test/Const/utils.dart';
 import 'package:fl_test/Screens/login_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +96,7 @@ class AccountScreen extends StatelessWidget {
                               ));
                     },
                     child: Container(
-                      width: MediaQuery.of(context).size.width / 2.7,
+                      width: MediaQuery.of(context).size.width / 3,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30),
                           color: Colors.red),
@@ -134,7 +135,7 @@ class AccountScreen extends StatelessWidget {
                 CircleAvatar(
                   radius: 90,
                   backgroundColor:
-                      Colors.blue, // Replace with your button color
+                      buttonColor, // Replace with your button color
                   child: Center(
                     child: CircleAvatar(
                       radius: 87,
@@ -174,7 +175,7 @@ class AccountScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
+                    SizedBox(
                       width: MediaQuery.of(context).size.width / 2.5,
                       child: Padding(
                         padding: const EdgeInsets.all(5.0),
@@ -204,7 +205,7 @@ class AccountScreen extends StatelessWidget {
                       height: 50,
                       color: Colors.black,
                     ),
-                    Container(
+                    SizedBox(
                       width: MediaQuery.of(context).size.width / 2.5,
                       child: Padding(
                         padding: const EdgeInsets.all(5.0),
@@ -220,11 +221,11 @@ class AccountScreen extends StatelessWidget {
                             ),
                             Text(
                               '${userData['percentage'] ?? '0'}%',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.normal,
-                                  color: Colors
-                                      .blue), // Replace with your button color
+                                  color:
+                                      buttonColor), // Replace with your button color
                             )
                           ],
                         ),

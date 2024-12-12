@@ -1,22 +1,46 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../Const/utils.dart';
 import '../Providers/task_provider.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  ScrollController scrollController;
+  HomeScreen({super.key, required this.scrollController});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
 // for calling refresh use    taskProvider.resetTasks();taskProvider.fetchTasks();
+  @override
+  void initState() {
+    final provider = Provider.of<TaskProvider>(context, listen: false);
+    provider.fetchTasks();
+    widget.scrollController.addListener(() {
+      if (widget.scrollController.position.pixels ==
+          widget.scrollController.position.maxScrollExtent) {
+        provider.loadMore(); // Load more data when scrolled to bottom
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    final taskProvider = Provider.of<TaskProvider>(context);
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(10),
-          child: Container(
+          child: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -70,188 +94,262 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(
           height: 10,
         ),
-        FutureBuilder(
-          future: taskProvider.fetchTasks(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error: ${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
-            } else {
-              return Consumer<TaskProvider>(
-                  builder: (context, taskProvider, _) {
-                return NotificationListener<ScrollNotification>(
-                    onNotification: (ScrollNotification scrollInfo) {
-                      if (!taskProvider.isLoading &&
-                          scrollInfo.metrics.pixels ==
-                              scrollInfo.metrics.maxScrollExtent) {
-                        taskProvider.loadMore();
-                        return true;
-                      }
-                      return false;
-                    },
-                    child: Column(
-                      children: List.generate(
-                        taskProvider.hasMore
-                            ? taskProvider.visibleTasks.length + 1
-                            : taskProvider.visibleTasks.length,
-                        (index) {
-                          if (index == taskProvider.visibleTasks.length) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-
-                          final task = taskProvider.visibleTasks[index];
-
-                          final Color color =
-                              Colors.primaries[index % Colors.primaries.length];
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: color.withOpacity(0.1),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(15),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      task.name,
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      task.description,
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.normal,
-                                          color: Colors.grey.shade800),
-                                    ),
-                                    const SizedBox(
-                                      height: 15,
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          _addTaskAlert(context, task.id,
-                                              task.name, task.description, 1);
-                                        },
-                                        icon: const Icon(Icons.book)),
-                                    IconButton(
-                                        onPressed: () {
-                                          deletetask(
-                                            context,
-                                            task.id,
-                                          );
-                                        },
-                                        icon: const Icon(Icons.delete)),
-                                    Container(
-                                      // height: 50,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          color: Colors.white),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  2.5,
-                                              // color: Colors.amber,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(5.0),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    const Text(
-                                                      "Status",
-                                                      style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black),
-                                                    ),
-                                                    Text(
-                                                      task.status,
-                                                      style: const TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          color: Colors.grey),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 1,
-                                              color: Colors.black,
-                                            ),
-                                            Container(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  2.5,
-                                              // color: Colors.blue,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(5.0),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    const Text(
-                                                      "Percentage",
-                                                      style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black),
-                                                    ),
-                                                    Text(
-                                                      "${task.percentage}%",
-                                                      style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          color: buttonColor),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                  ],
+        taskProvider.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : taskProvider.errorMessage != null
+                ? Center(child: Text(taskProvider.errorMessage!))
+                : taskProvider.visibleTasks.isEmpty
+                    ? const Center(child: Text('No data available'))
+                    : Column(
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 10.0, right: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Total Tasks :${taskProvider.taskrep.totalTasks}",
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.black),
                                 ),
-                              ),
+                                Text(
+                                  "Pending Tasks :${taskProvider.taskrep.pendingTasks}",
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.normal,
+                                      color: buttonColor),
+                                ),
+                              ],
                             ),
-                          );
-                        },
+                          ),
+                          Column(
+                            children: List.generate(
+                              taskProvider.hasMore
+                                  ? taskProvider.visibleTasks.length + 1
+                                  : taskProvider.visibleTasks.length,
+                              (index) {
+                                if (index == taskProvider.visibleTasks.length) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+
+                                final task = taskProvider.visibleTasks[index];
+
+                                final Color color = Colors
+                                    .primaries[index % Colors.primaries.length];
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      color: color.withOpacity(0.1),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(15),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    1.7,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      task.name,
+                                                      style: const TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black),
+                                                    ),
+                                                    Text(
+                                                      task.description,
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                          color: Colors
+                                                              .grey.shade800),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Row(
+                                                children: [
+                                                  InkWell(
+                                                    onTap: () {
+                                                      _addTaskAlert(
+                                                          context,
+                                                          task.id,
+                                                          task.name,
+                                                          task.description,
+                                                          1);
+                                                    },
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      radius: 23,
+                                                      child: SvgPicture.asset(
+                                                        "assets/svg/edit.svg",
+                                                        color: buttonColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 5,
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      deletetask(
+                                                        context,
+                                                        task.id,
+                                                      );
+                                                    },
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      radius: 23,
+                                                      child: SvgPicture.asset(
+                                                        "assets/svg/delete1.svg",
+                                                        color: buttonColor,
+                                                        height: 28,
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                color: Colors.white),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            2.5,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              5.0),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          const Text(
+                                                            "Status",
+                                                            style: TextStyle(
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .black),
+                                                          ),
+                                                          Text(
+                                                            task.status,
+                                                            style: const TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .grey),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: 1,
+                                                    color: Colors.black,
+                                                  ),
+                                                  SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            2.5,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              5.0),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          const Text(
+                                                            "Percentage",
+                                                            style: TextStyle(
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .black),
+                                                          ),
+                                                          Text(
+                                                            "${task.percentage}%",
+                                                            style: TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color:
+                                                                    buttonColor),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ));
-              });
-            }
-          },
-        ),
         const SizedBox(
           height: 120,
         )
@@ -259,6 +357,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+// add task and edit task
   void _addTaskAlert(
       BuildContext context, int id, String name, String description, int from) {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
@@ -275,7 +374,9 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          scrollable: true,
           backgroundColor: Colors.grey[200],
+          insetPadding: const EdgeInsets.all(20),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -301,7 +402,7 @@ class HomeScreen extends StatelessWidget {
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Container(
-                height: 350,
+                // height: 350,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -351,7 +452,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Deadline Picker
+
                     InkWell(
                       onTap: () async {
                         final DateTime? pickedDate = await showDatePicker(
@@ -491,7 +592,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   // delete dialoge
-
   void deletetask(BuildContext context, int id) {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     showDialog(
@@ -523,6 +623,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 isLoadingdelete
+                    // ignore: dead_code
                     ? const Center(
                         child: SizedBox(
                           height: 20,

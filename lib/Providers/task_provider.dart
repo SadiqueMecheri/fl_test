@@ -13,6 +13,7 @@ class TaskProvider with ChangeNotifier {
   int _currentPage = 1;
   bool _isLoading = false;
   String? _errorMessage;
+  late TaskResponse taskrep;
 
   List<Task> get visibleTasks => _visibleTasks;
   bool get isLoading => _isLoading;
@@ -41,6 +42,7 @@ class TaskProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = taskResponseFromJson(response.body);
+        taskrep = data;
         _allTasks = data.data;
         _loadMoreTasks(); // Load the first page
       } else {

@@ -1,14 +1,39 @@
+import 'package:fl_test/Const/shared_preferences.dart';
 import 'package:fl_test/Const/utils.dart';
+import 'package:fl_test/Screens/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../Providers/login_provider.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
-  bool _isPasswordVisible = false; // Tracks password visibility
+  late final String? isLoggedIn;
+
+  @override
+  void initState() {
+    _checkSession();
+    super.initState();
+  }
+
+  Future _checkSession() async {
+    isLoggedIn = await Store.getLoggedIn();
+    if (isLoggedIn == "yes") {
+      Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (context) {
+          return Dashboard();
+        },
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,16 +71,16 @@ class LoginPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 22,
+                      fontSize: 20,
                       color: textColor1,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 2),
                   Text(
                     "Wellcome back vou've been missed!",
                     textAlign: TextAlign.center,
                     style:
-                        TextStyle(fontSize: 15, color: textColor2, height: 1.2),
+                        TextStyle(fontSize: 14, color: textColor2, height: 1.2),
                   ),
                   const SizedBox(height: 100),
                   Container(
@@ -65,6 +90,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     child: TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -79,7 +105,7 @@ class LoginPage extends StatelessWidget {
                         hintText: "Enter email",
                         hintStyle: const TextStyle(
                           color: Colors.black45,
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
                       ),
                       validator: (value) {
@@ -115,7 +141,7 @@ class LoginPage extends StatelessWidget {
                             hintText: "Password",
                             hintStyle: const TextStyle(
                               color: Colors.black45,
-                              fontSize: 14,
+                              fontSize: 13,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -156,9 +182,7 @@ class LoginPage extends StatelessWidget {
                                     final password = _passwordController.text;
                                     await loginProvider.login(
                                         email, password, context);
-
                                     if (loginProvider.errorMessage != null) {
-                                      // Show error message in a SnackBar
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(

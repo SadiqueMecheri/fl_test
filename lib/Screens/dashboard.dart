@@ -15,6 +15,12 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int currentIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +50,13 @@ class _DashboardState extends State<Dashboard> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: SingleChildScrollView(
+                      controller: _scrollController,
                       child: Column(
                         children: [
                           currentIndex == 0
-                              ? const HomeScreen()
+                              ? HomeScreen(
+                                  scrollController: _scrollController,
+                                )
                               : const AccountScreen(),
                         ],
                       ),
@@ -57,8 +66,7 @@ class _DashboardState extends State<Dashboard> {
                 Positioned(
                   bottom: 40,
                   child: Container(
-                    height: 70,
-                    // width: MediaQuery.of(context).size.width / 1.3,
+                    height: 60,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(40),
                         color: buttonColor),
@@ -85,13 +93,14 @@ class _DashboardState extends State<Dashboard> {
                                 child: Row(
                                   children: [
                                     SvgPicture.asset(
+                                      height: 20,
                                       "assets/svg/home.svg",
                                       color: currentIndex == 0
                                           ? Colors.black
                                           : Colors.white,
                                     ),
                                     const SizedBox(
-                                      width: 5,
+                                      width: 3,
                                     ),
                                     Text(
                                       "Home",
@@ -100,7 +109,7 @@ class _DashboardState extends State<Dashboard> {
                                         color: currentIndex == 0
                                             ? Colors.black
                                             : Colors.white,
-                                        fontSize: 14,
+                                        fontSize: 13,
                                       ),
                                     )
                                   ],
@@ -109,7 +118,7 @@ class _DashboardState extends State<Dashboard> {
                             ),
                           ),
                           const SizedBox(
-                            width: 20,
+                            width: 10,
                           ),
                           InkWell(
                             onTap: () {
@@ -129,6 +138,7 @@ class _DashboardState extends State<Dashboard> {
                                 child: Row(
                                   children: [
                                     SvgPicture.asset(
+                                      height: 20,
                                       "assets/svg/profle.svg",
                                       color: currentIndex == 1
                                           ? Colors.black
@@ -144,7 +154,7 @@ class _DashboardState extends State<Dashboard> {
                                         color: currentIndex == 1
                                             ? Colors.black
                                             : Colors.white,
-                                        fontSize: 14,
+                                        fontSize: 13,
                                       ),
                                     )
                                   ],
